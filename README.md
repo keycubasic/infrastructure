@@ -1,18 +1,18 @@
 # Terraform
 ## Подготовка окружения
 
-Инициализация в Yandex Cloud
+### Инициализация в Yandex Cloud
 ```sh
 yc init --federation-id=bpfpfctkh7focc85u9sq
 ```
 
-Конфигурация Yandex Cloud CLI
+### Конфигурация Yandex Cloud CLI
 ```sh
 yc config set cloud-id b1g3jddf4nv5e9okle7p
 yc config set folder-id b1g4n3h4dcqdt2vtjlsv
 ```
 
-Установка переменных окружения
+### Установка переменных окружения
 ```sh
 export YC_TOKEN=$(yc iam create-token)
 export YC_CLOUD_ID=$(yc config get cloud-id)
@@ -21,37 +21,43 @@ export YC_FOLDER_ID=$(yc config get folder-id)
 
 ## Создание инфраструктуры
 
-Инициализация Terreform
+### Инициализация Terreform
 ```sh
 cd terraform
 terraform init
 ```
 
-Создание SSH ключей
+### Создание SSH ключей
 ```sh
-ssh-keygen -t rsa -C "example@site.come" -f ./id_rsa
+ssh-keygen -t rsa -C "keycube@yandex.ru" -f ./id_rsa
 ```
+Прописать ключ в cloud-init
 
-Проверка синтаксиса
+### Проверка синтаксиса
 ```sh
 terraform validate
 ```
 
-Форматирование кода
+### Форматирование кода
 ```sh
 terraform fmt
 ```
 
-План изменений
+### План изменений
 ```sh
 terraform plan
 ```
 
-Создание инфраструктуры
+### Создание инфраструктуры
 ```sh
 terraform apply
 ```
 
-Удаление инфраструктуры
+### Подключение к VM
+```sh
+ssh -l ansible <nat_ip_address>
+```
+
+### Удаление инфраструктуры
 ```sh
 terraform destroy

@@ -38,7 +38,6 @@ resource "yandex_compute_instance" "vm-1" {
   }
 
   metadata = {
-    ssh-keys  = file("id_rsa.pub")
     user-data = file("cloud-init-add-user.yaml")
   }
 }

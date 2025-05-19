@@ -17,14 +17,9 @@ users:
     sudo: ALL=(ALL) NOPASSWD:ALL
     lock_passwd: false
     ssh_authorized_keys:
-      - /id_rsa.pub
-
-# SSH keys
-ssh_keys:
-  rsa_private: /id_rsa
-  rsa_public: /id_rsa.pub
-
-# Downloads the Midnight Commander package
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDc00U9Mjw588vBFuNCv1I1iFzVRq+C/XCp0f61TY7wq3gnThr5Vms6bjNyezwMXT1CVzhMqPNzenI8tzeBs+Yrl7pJR4N2ZBVLd4ss2YiCrT9lfBB61HDC9ZWBdX0+3POnBW+Njp0R8Ofba9VWzDsCvuBoq9+V7kVqFVp/X3QF+ADtBBQEpcivNXcUm+0CUu4a6YmQ93vtL3EhkiIjr9Ati2b6Lip7hZ2IBrsfzOk0FIlia6h+yr1sOLJQiHTbhz7guwm9yBiAynIYPuB3XY3NMyLAP2UzQI7xdxEEnHgpzDpriswa9vZFGgrmtGdX5tqW9sklsolt9bFxnZmm6FDExZuDk6PJtti63pVSNGY1u8EhYSRJHLkTchp2N8xHSZpddBMd6pj27LllJZnc1ALlIcNruAQf8+cAC00LUdrmOTnox4OrZXb4/6fCzobDaBmBxLZJ7Lo99GBIEbj36eULUqLNYzu65fZYzAo2toY+u7N6dWmlbPo2AHwFmdKdJ08= keycube@yandex.ru
+ 
+ # Downloads the Midnight Commander package
 packages:
   - mc
 
