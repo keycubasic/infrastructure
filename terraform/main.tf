@@ -8,17 +8,17 @@ terraform {
 }
 
 provider "yandex" {
-  zone = "ru-central1-a"
+  zone = var.zone
 }
 
 resource "yandex_compute_instance" "vm-1" {
-  name = "std-040-05-practice-tf"
+  name = var.name
 
   # Конфигурация ресурсов:
   # количество процессоров и оперативной памяти
   resources {
-    cores  = 4
-    memory = 4
+    cores  = var.cores
+    memory = var.memory
   }
 
   # Загрузочный диск:
@@ -26,19 +26,20 @@ resource "yandex_compute_instance" "vm-1" {
   # для новой виртуальной машины
   boot_disk {
     initialize_params {
-      image_id = "fd80qm01ah03dkqb14lc"
+      image_id = var.image_id
+      size     = var.disk_size
     }
   }
 
   # Сетевой интерфейс:
   # нужно указать идентификатор подсети, к которой будет подключена ВМ
   network_interface {
-    subnet_id = "e9behps33a0dus6o9lmq"
-    nat       = true
+    subnet_id = var.subnet_id
+    nat       = var.nat
   }
 
   metadata = {
-    user-data = file("cloud-init-add-user.yaml")
+    user-data = file(var.cloud_init_yaml)
   }
 }
 
