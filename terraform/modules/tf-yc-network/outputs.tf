@@ -1,0 +1,3 @@
+output "out_subnet_id" {
+  value = yandex_vpc_subnet.subnet-1.id
+}
