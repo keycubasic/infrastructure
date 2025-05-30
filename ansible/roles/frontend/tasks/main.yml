@@ -1,0 +1,54 @@
+---
+- name: Установить последнюю версию curl
+  apt:
+    name: curl
+    state: latest
+
+- name: Установить npm и nodejs
+  ansible.builtin.shell: |
+    curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+    sudo apt-get install -y nodejs
+
+- name: Установить http-server
+  ansible.builtin.shell: |
+    npm install --global http-server
+
+- name: Добавим сервисного пользователя
+  user:
+    name: "{{ frontend_service_user }}"
+    group: admin
+
+- name: Cоздать папки, выдать права
+  ansible.builtin.shell: |
+    sudo mkdir -p /opt/sausage-store/static/dist/frontend
+    sudo chown -R "{{ frontend_service_user }}:{{ frontend_service_user }}" /opt/sausage-store/static/dist
+    sudo chmod -R 755 /opt/sausage-store/static/dist
+
+- name: Загрузить пакет приложения из Nexus
+  ansible.builtin.shell: |
+    set -xe
+    sudo rm -f /opt/sausage-store/static/dist/sausage-store.tar.gz||true
+    sudo rm -f /opt/sausage-store/static/dist/frontend/*||true
+    echo
+    sudo curl -u "{{ nexus_username }}:{{ nexus_password }}" -o sausage-store.tar.gz "{{ nexus_url }}/repository/{{ nexus_repo_fronrend_name }}/{{ frontend_static_version }}/sausage-store-{{ frontend_static_version }}".tar.gz
+    sudo tar xfv ./sausage-store.tar.gz -C /opt/sausage-store/static/dist/||true
+
+- name: Установить возможность использования привилегированных портов для Node.js
+  ansible.builtin.shell: |
+    sudo setcap CAP_NET_BIND_SERVICE=+eip /usr/bin/node
+
+- name: Шаблонизация конфига управляет настройками приложения с помощью переменных
+  template:
+    src: frontend.service.j2
+    dest: /etc/systemd/system/frontend.service
+
+- name: Перечитываем конфигурацию systemd
+  systemd:
+    daemon_reload: yes
+
+- name: всё готово - запускаем!
+  service:
+    name: frontend
+    state: started
+    enabled: yes
+    

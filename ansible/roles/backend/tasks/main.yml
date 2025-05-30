@@ -1,0 +1,63 @@
+---
+- name: Установить последнюю версию openjdk-16-jdk
+  apt:
+    name: openjdk-16-jdk
+    state: latest
+    install_recommends: no
+
+- name: Установить pip
+  apt:
+    name: python3-pip
+    state: present
+
+- name: Установить lxml
+  pip:
+    name: lxml
+
+- name: Добавим сервисного пользователя
+  user:
+    name: "{{ backend_service_user }}"
+    groups: admin
+
+- name: Cоздать папки, выдать права
+  ansible.builtin.shell: |
+    sudo mkdir -p /opt/sausage-store/bin
+    sudo mkdir -p /var/sausage-store/logs
+    sudo mkdir -p /var/sausage-store/reports
+    sudo chmod -R 777 /opt/sausage-store/bin
+    sudo chmod -R 777 /var/sausage-store/logs
+    sudo chmod -R 777 /var/sausage-store/reports
+
+- name: Удалить старый jar-файл
+  ansible.builtin.shell: |
+    set -xe
+    sudo rm -f /opt/sausage-store/bin/sausage-store.jar||true
+
+- name: Загрузить пакет приложения из Nexus
+  maven_artifact:
+    dest: "/opt/sausage-store/bin/sausage-store.jar"
+    repository_url: "{{ nexus_url }}/repository/{{ nexus_repo_backend_name }}"
+    group_id: "com.yandex.practicum.devops"
+    artifact_id: "sausage-store"
+    version: "{{ backend_maven_version }}"
+    username: "{{ nexus_username }}"
+    password: "{{ nexus_password }}"
+
+- name: Выдать права на исполняемый файл
+  ansible.builtin.shell: |
+    sudo chmod -R 777 /opt/sausage-store/bin/sausage-store.jar
+    
+- name: Шаблонизация конфига управляет настройками приложения с помощью переменных
+  template:
+    src: backend.service.j2
+    dest: /etc/systemd/system/backend.service
+
+- name: Перечитываем конфигурацию systemd
+  systemd:
+    daemon_reload: yes
+
+- name: всё готово - запускаем!
+  service:
+    name: backend
+    state: started
+    enabled: yes
