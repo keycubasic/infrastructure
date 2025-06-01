@@ -24,7 +24,6 @@ packages:
   - mc
   - curl
   - python3
-  - nodejs
 
 # Run something
 runcmd:

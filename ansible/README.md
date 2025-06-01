@@ -6,6 +6,12 @@
 
 - ### Прописать IP созданной VM в [hosts.ini](../ansible/hosts.ini)
 
+- ### Задать переменные окружения
+```sh
+export NEXUS_URL=https://nexus.praktikum-services.tech
+export NEXUS_USERNAME=std-040-05
+export NEXUS_PASSWORD=657Kt2sy
+```
 ## Создание конфигурации
 
 ### Настройка SSH

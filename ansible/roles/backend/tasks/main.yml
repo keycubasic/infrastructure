@@ -4,60 +4,85 @@
     name: openjdk-16-jdk
     state: latest
     install_recommends: no
+  become: true
 
 - name: Установить pip
   apt:
     name: python3-pip
     state: present
+  become: true
 
 - name: Установить lxml
   pip:
     name: lxml
+  become: true
 
 - name: Добавим сервисного пользователя
   user:
     name: "{{ backend_service_user }}"
     groups: admin
+  become: true
 
-- name: Cоздать папки, выдать права
-  ansible.builtin.shell: |
-    sudo mkdir -p /opt/sausage-store/bin
-    sudo mkdir -p /var/sausage-store/logs
-    sudo mkdir -p /var/sausage-store/reports
-    sudo chmod -R 777 /opt/sausage-store/bin
-    sudo chmod -R 777 /var/sausage-store/logs
-    sudo chmod -R 777 /var/sausage-store/reports
+- name: Создать папку для приложения
+  file:
+    path: /opt/sausage-store/bin
+    state: directory
+    owner: "{{ backend_service_user }}"
+    group: admin
+    mode: 0755
+  become: true
 
-- name: Удалить старый jar-файл
-  ansible.builtin.shell: |
-    set -xe
-    sudo rm -f /opt/sausage-store/bin/sausage-store.jar||true
+- name: Создать папку для логов
+  file:
+    path: /var/sausage-store/logs
+    state: directory
+    owner: "{{ backend_service_user }}"
+    group: admin
+    mode: 0755
+  become: true
+
+- name: Создать папку для отчетов
+  file:
+    path: /var/sausage-store/reports
+    state: directory
+    owner: "{{ backend_service_user }}"
+    group: admin
+    mode: 0755
+  become: true
 
 - name: Загрузить пакет приложения из Nexus
   maven_artifact:
-    dest: "/opt/sausage-store/bin/sausage-store.jar"
-    repository_url: "{{ nexus_url }}/repository/{{ nexus_repo_backend_name }}"
-    group_id: "com.yandex.practicum.devops"
+    dest: /opt/sausage-store/bin/sausage-store.jar
+    repository_url: "{{ nexus_url_loc }}/repository/{{ nexus_repo_backend_name }}"
+    group_id: "{{ nexus_group_id }}"
     artifact_id: "sausage-store"
     version: "{{ backend_maven_version }}"
-    username: "{{ nexus_username }}"
-    password: "{{ nexus_password }}"
+    username: "{{ nexus_username_loc }}"
+    password: "{{ nexus_password_loc }}"
+  become: true
 
 - name: Выдать права на исполняемый файл
-  ansible.builtin.shell: |
-    sudo chmod -R 777 /opt/sausage-store/bin/sausage-store.jar
+  file:
+    path: /opt/sausage-store/bin/sausage-store.jar
+    owner: "{{ backend_service_user }}"
+    group: admin
+    mode: 0755
+  become: true
     
 - name: Шаблонизация конфига управляет настройками приложения с помощью переменных
   template:
     src: backend.service.j2
     dest: /etc/systemd/system/backend.service
+  become: true
 
 - name: Перечитываем конфигурацию systemd
   systemd:
     daemon_reload: yes
+  become: true
 
 - name: всё готово - запускаем!
   service:
     name: backend
     state: started
     enabled: yes
+  become: true

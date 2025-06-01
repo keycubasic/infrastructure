@@ -3,52 +3,84 @@
   apt:
     name: curl
     state: latest
+  become: true
 
-- name: Установить npm и nodejs
+- name: Настроить репозиторий Node.js
   ansible.builtin.shell: |
     curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-    sudo apt-get install -y nodejs
+
+- name: Установить nodejs
+  apt:
+    name: nodejs
+  become: true
 
 - name: Установить http-server
-  ansible.builtin.shell: |
-    npm install --global http-server
+  npm: 
+    name: http-server
+    global: yes
+  become: true
 
 - name: Добавим сервисного пользователя
   user:
     name: "{{ frontend_service_user }}"
     group: admin
+  become: true
 
-- name: Cоздать папки, выдать права
-  ansible.builtin.shell: |
-    sudo mkdir -p /opt/sausage-store/static/dist/frontend
-    sudo chown -R "{{ frontend_service_user }}:{{ frontend_service_user }}" /opt/sausage-store/static/dist
-    sudo chmod -R 755 /opt/sausage-store/static/dist
+- name: Создать папку для приложения
+  file:
+    path: /opt/sausage-store/static/dist
+    state: directory
+    owner: "{{ frontend_service_user }}"
+    group: admin
+    mode: 0755
+  become: true
+
+- name: Вывести значение переменных
+  debug:
+    msg:
+    - "nexus_url_loc: {{ nexus_url_loc }}"
+    - "nexus_username_loc: {{ nexus_username_loc }}"
+    - "nexus_password_loc: {{ nexus_password_loc }}"
 
 - name: Загрузить пакет приложения из Nexus
   ansible.builtin.shell: |
-    set -xe
-    sudo rm -f /opt/sausage-store/static/dist/sausage-store.tar.gz||true
-    sudo rm -f /opt/sausage-store/static/dist/frontend/*||true
-    echo
-    sudo curl -u "{{ nexus_username }}:{{ nexus_password }}" -o sausage-store.tar.gz "{{ nexus_url }}/repository/{{ nexus_repo_fronrend_name }}/{{ frontend_static_version }}/sausage-store-{{ frontend_static_version }}".tar.gz
-    sudo tar xfv ./sausage-store.tar.gz -C /opt/sausage-store/static/dist/||true
+    curl -u "{{ nexus_username_loc }}:{{ nexus_password_loc }}" -o sausage-store.tar.gz "{{ nexus_url_loc }}/repository/{{ nexus_repo_frontend_name }}/{{ frontend_static_version }}/sausage-store-{{ frontend_static_version }}".tar.gz  
+  become: true
+
+- name: Распаковать приложение
+  shell: tar xfv ./sausage-store.tar.gz -C /opt/sausage-store/static/dist/
+  become: true
+
+- name: Выдать права на папку статики
+  file:
+    path: /opt/sausage-store/static/dist/frontend
+    state: directory
+    owner: "{{ frontend_service_user }}"
+    group: admin
+    mode: 0755
+  become: true
 
 - name: Установить возможность использования привилегированных портов для Node.js
-  ansible.builtin.shell: |
-    sudo setcap CAP_NET_BIND_SERVICE=+eip /usr/bin/node
+  community.general.capabilities:
+    path: /usr/bin/node
+    capability: cap_net_bind_service+eip
+    state: present
+  become: true
 
 - name: Шаблонизация конфига управляет настройками приложения с помощью переменных
   template:
     src: frontend.service.j2
     dest: /etc/systemd/system/frontend.service
+  become: true
 
 - name: Перечитываем конфигурацию systemd
   systemd:
     daemon_reload: yes
+  become: true
 
 - name: всё готово - запускаем!
   service:
     name: frontend
     state: started
     enabled: yes
-    
+  become: true
