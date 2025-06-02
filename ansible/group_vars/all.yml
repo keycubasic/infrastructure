@@ -1,0 +1,4 @@
+nexus_url_loc: "{{ lookup('env', 'NEXUS_URL') }}"
+nexus_username_loc: "{{ lookup('env', 'NEXUS_USERNAME') }}"
+nexus_password_loc: "{{ lookup('env', 'NEXUS_PASSWORD') }}"
+nexus_group_id: com.yandex.practicum.devops

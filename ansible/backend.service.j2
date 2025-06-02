@@ -1,0 +1,15 @@
+[Unit]
+Description=Backend Service
+
+[Service]
+Environment=REPORT_PATH=/var/sausage-store/reports
+Environment=LOG_PATH=/var/sausage-store/logs
+# Environment=JAVA_HOME=/usr/lib/jvm/openjdk-16
+# Environment=PATH=$JAVA_HOME/bin:$PATH
+Type=exec
+User={{ backend_service_user }}
+Group={{ backend_service_user }}
+ExecStart=java -jar /opt/sausage-store/bin/sausage-store.jar
+
+[Install]
+WantedBy=multi-user.target
